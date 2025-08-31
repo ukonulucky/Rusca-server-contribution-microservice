@@ -2,8 +2,7 @@ import { Request, RequestHandler, Response } from "express";
 import GroupModel from "../model/groupSchema";
 import logger from "../utils/logger";
 import {
-  addGroupMemberValidation,
-  createGroupValidation,
+  addGroupMemberValidation
 } from "../utils/validate";
 import { isValidObjectId, Types } from "mongoose";
 import MemberModel from "../model/memberModelSchema";
@@ -51,10 +50,10 @@ export const addMemberController: RequestHandler = async (
 
     // check if group is alresdy filled
     const { numberOfMembers, groupMembersId } = group;
-
+  
     if ((groupMembersId as Types.ObjectId[]).length === numberOfMembers) {
       return res.status(409).json({
-        message: "Group filled",
+        message: "Group allready filled",
         status: false,
       });
     }
@@ -68,6 +67,8 @@ export const addMemberController: RequestHandler = async (
       return res.status(409).json({
         status: false,
         message: "Member already exist in group",
+        groupMembersId,
+        numberOfMembers
       });
     }
 
@@ -77,17 +78,18 @@ export const addMemberController: RequestHandler = async (
 
     // update the group
 
-    await GroupModel.findByIdAndUpdate(groupId, {
-      $inc: {
-        numberOfMembers: 1,
-      },
-    });
+   const updatedGroup = await GroupModel.findByIdAndUpdate(groupId, {
+     $addToSet: { groupMembersId: userId } 
+   }, {
+     new : true
+   });
     logger.info(`user with id ${userId} is added to group ${group.groupName}`);
     res
       .status(201)
       .json({
         message: "Member added successfully",
         data: member,
+       updatedGroup,
         status: true,
       });
   } catch (err) {
@@ -107,14 +109,14 @@ export const addMemberController: RequestHandler = async (
   }
 };
 
-// get member associated with a group
+// get member 
 export const getGroupMember = async (req: Request, res: Response) => {
   try {
     logger.info("user hits the getGroup controller");
     const { memberId } = req.params;
 
-    const isIdVallid = isValidObjectId(memberId.toString());
-    if (!memberId || !isIdVallid) {
+    const isIdValid = isValidObjectId(memberId.toString());
+    if (!memberId || !isIdValid) {
       return res.status(404).json({
         status: "false",
         message: "Invalid/missing member Id",
@@ -178,12 +180,22 @@ export const deleteGroupMember = async (req: Request, res: Response) => {
     const member = await MemberModel.findByIdAndDelete(memberId);
     logger.info("member deleted from a group:", member);
     if (!member) {
-      logger.warn("intending member to delete not found in DB");
       return res.status(404).json({
         message: "member not found",
         status: false,
+        member
       });
     }
+      logger.warn("intending member to delete not found in DB");
+    logger.info("attempt to remove membersId from group")
+    await GroupModel.findByIdAndUpdate(member._id, {
+      $pull: {
+        groupMembersId:memberId
+      }
+    });
+    
+    logger.info("removed members Id from group")
+
     res.status(200).json({
       message: "Member deleted successfully",
       status: false,
@@ -253,3 +265,5 @@ export const getAllMembers = async (req: Request, res: Response) => {
     }
   }
 };
+
+

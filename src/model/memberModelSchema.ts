@@ -7,8 +7,14 @@ const MemberSchema: Schema = new Schema<IMember>({
     ref: "User",
     required: true,
   },
+
   groupId: { type: Schema.Types.ObjectId, ref: 'Group', required: true },
-  status: { type: String, default: 'pending' }
+  status: { type: String, default: 'pending' },
+  createdAt: {
+    type: Date, default: Date.now
+  }
+}, {
+  timestamps: true
 });
 const MemberModel =  mongoose.model('Member', MemberSchema)
 

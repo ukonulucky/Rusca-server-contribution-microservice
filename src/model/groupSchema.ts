@@ -10,12 +10,20 @@ const GroupSchema: Schema = new Schema<IGroup>({
       type: mongoose.Schema.Types.ObjectId, 
       ref: 'User', 
   }],
-  required: true, 
-  default: null, 
+  default: []
   },
   monthlyContribution: { type: Number, required: true },
-  status: { type: String, default: 'active' }
+  status: { type: String, default: 'active' },
+  createdAt: {
+    type: Date,
+    default: Date.now
+  }
+}, {
+  timestamps:true
 });
+
+
+
 
 const GroupModel = mongoose.model('Group', GroupSchema);
 export default GroupModel;

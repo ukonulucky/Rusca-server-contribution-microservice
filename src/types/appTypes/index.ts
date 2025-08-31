@@ -10,15 +10,17 @@ export interface IGroup extends Document {
     groupName: string;
     numberOfMembers: number;
     monthlyContribution: number;
-  status: "active" | "pending" | "suspended";,
-  groupMembersId: MongooseIdType[] | null
+  status: "active" | "pending" | "suspended",
+  groupMembersId: MongooseIdType[] | null,
+  createdAt: Date
 }
   
 
 export interface IMember extends Document {
     userId: MongooseIdType ;
     groupId: MongooseIdType;
-    status: "active"|"pending"|"suspended";
+  status: "active" | "pending" | "suspended";
+  createdAt: Date
   }
 
 

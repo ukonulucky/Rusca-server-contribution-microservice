@@ -2,7 +2,7 @@ import { Request, RequestHandler, Response } from 'express';
 import GroupModel from '../model/groupSchema';
 import logger from '../utils/logger';
 import { createGroupValidation } from '../utils/validate';
-import { isValidObjectId } from 'mongoose';
+import { isValidObjectId, Types } from 'mongoose';
 import MemberModel from '../model/memberModelSchema';
 
 
@@ -163,10 +163,13 @@ export const deleteGroup = async (req: Request, res: Response) => {
         return   res.status(200).json({
           message: "Group not found",
           status: false
-      });
+        });
       }
       logger.info("group deleted:", group)
+      logger.info("attempt to delete all associated members to group")
+      await MemberModel.deleteMany({ groupId: group._id });
       
+      logger.info("all associated members deleted")
     res.status(200).json({
         message: "Group deleted successfully",
         status: false,
@@ -204,11 +207,10 @@ export const deleteGroup = async (req: Request, res: Response) => {
 
 
 // get all members associated with a group
-
 export const getGroupMembers = async (req: Request, res: Response) => {
 
   try {
-      logger.info("user hits the delteGroup controller")
+      logger.info("user hits the getGRoup members controller")
     const { groupId } = req.params
      
           const isIdVallid = isValidObjectId(groupId.toString());
@@ -219,21 +221,31 @@ export const getGroupMembers = async (req: Request, res: Response) => {
             });
           }
     // returns all the members in a given grou using the group id
-    const group = await MemberModel.find({
-     groupId 
-    });
-    if (!group) { 
+    logger.info('attempt to get all members in a group')
+    const group = await GroupModel.aggregate([
+      { $match: { _id: new Types.ObjectId(groupId) } },
+      {
+        $lookup: {
+          from: 'users',              // target collection name
+          localField: 'groupMembersId',
+          foreignField: '_id',
+          as: 'members'
+        }
+      }
+     
+    ]);
+    if (group.length === 0) { 
       return   res.status(200).json({
         message: "Group not found",
         status: false
     });
     }
-    logger.info("group deleted:", group)
-    
+    logger.info("group found:", group)
+    console.log("group members fetched", group)
   res.status(200).json({
-      message: "Group members fetched successfully",
+      message: "Group members fetched successfully now",
       status: false,
-      data: group
+    data: group[0].members
   });
 } catch (err) {
   logger.error(err)
@@ -264,3 +276,4 @@ export const getGroupMembers = async (req: Request, res: Response) => {
 
 }
 };
+
