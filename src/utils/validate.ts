@@ -26,7 +26,6 @@ export const addGroupMemberValidation = (data:groupMemberValidationType) => {
   }
   
 const schema = Joi.object({
-    userId: Joi.string().required(),
     groupId:Joi.string().required()
 
 })

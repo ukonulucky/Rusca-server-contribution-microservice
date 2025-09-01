@@ -7,13 +7,17 @@ import {
 import { isValidObjectId, Types } from "mongoose";
 import MemberModel from "../model/memberModelSchema";
 
+
+
 // add member controller
 export const addMemberController: RequestHandler = async (
-  req: Request,
-  res: Response
+  req,
+  res
 ) => {
   try {
     logger.info("user hit the add group member controller");
+    const userid = req.headers.userid
+ 
     const { error } = addGroupMemberValidation(req.body);
     if (error) {
       logger.error(
@@ -26,7 +30,7 @@ export const addMemberController: RequestHandler = async (
       });
       return;
     }
-    const { userId, groupId } = req.body;
+    const {  groupId } = req.body;
 
     const isIdVallid = isValidObjectId(groupId.toString());
     if (!groupId || !isIdVallid) {
@@ -60,9 +64,11 @@ export const addMemberController: RequestHandler = async (
 
     // check if user already exist in the group
     logger.info("checking if user already exist in group");
+    console.log("userid:", userid, "groupId:", groupId);
     const isUserPresent = await MemberModel.findOne({
-      $and: [{ userId }, { groupId }],
+      $and: [{ userId: userid }, { groupId }],
     });
+    console.log("isUserPresent:", isUserPresent)
     if (isUserPresent) {
       return res.status(409).json({
         status: false,
@@ -73,17 +79,17 @@ export const addMemberController: RequestHandler = async (
     }
 
     // adding a user to a group
-    const member = new MemberModel({ userId, groupId });
+    const member = new MemberModel({ userId:userid, groupId });
     await member.save();
 
     // update the group
 
    const updatedGroup = await GroupModel.findByIdAndUpdate(groupId, {
-     $addToSet: { groupMembersId: userId } 
+     $addToSet: { groupMembersId: userid } 
    }, {
      new : true
    });
-    logger.info(`user with id ${userId} is added to group ${group.groupName}`);
+    logger.info(`user with id ${userid} is added to group ${group.groupName}`);
     res
       .status(201)
       .json({

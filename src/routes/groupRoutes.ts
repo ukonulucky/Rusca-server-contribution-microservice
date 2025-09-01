@@ -1,22 +1,21 @@
 import { Router } from 'express';
 import { createGroup, deleteGroup, getGroup, getGroupMembers, getGroups } from '../controllers/groupController';
-import { getGroupMember } from '../controllers/memberController';
 
-const router = Router();
+const groupRouter = Router();
 
 // post group
-router.post('/create', createGroup);
+groupRouter.post('/create', createGroup);
 
 // get all groups
-router.get('/groups', getGroups);
+groupRouter.get('/groups', getGroups);
 
 //get single group by id
-router.get('/:groupId', getGroup);
+groupRouter.get('/:groupId', getGroup);
 
 // delete group
-router.delete('/:groupId', deleteGroup);
+groupRouter.delete('/:groupId', deleteGroup);
 
 //get group members 
-router.get('/members/:groupId', getGroupMembers);
+groupRouter.get('/members/:groupId', getGroupMembers);
 
-export default router;
+export default groupRouter;

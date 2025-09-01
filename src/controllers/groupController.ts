@@ -243,7 +243,7 @@ export const getGroupMembers = async (req: Request, res: Response) => {
     logger.info("group found:", group)
     console.log("group members fetched", group)
   res.status(200).json({
-      message: "Group members fetched successfully now",
+      message: "Group members fetched successfully",
       status: false,
     data: group[0].members
   });

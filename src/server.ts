@@ -9,8 +9,8 @@ import helmet from "helmet"
 import { RateLimiterRedis } from "rate-limiter-flexible"
 import { connectRedisDbFunc } from "./confiq/connectRedis"
 import path from "path"
-import router from "./routes/groupRoutes"
 import memberRouter from "./routes/memberRoutes"
+import groupRouter from "./routes/groupRoutes"
 
 
 
@@ -83,8 +83,8 @@ app.get("/", (req, res) => {
     console.log("Root route accessed");
     res.send(`Server running on port ${PORT}`)
  })
-app.use("/api/group", router)
-app.use("/api/member", memberRouter)
+app.use("/api/contribution/group", groupRouter)
+app.use("/api/contribution/member", memberRouter)
 
 // route for all other routes
 app.use((req: Request, res: Response, next: NextFunction) => {
