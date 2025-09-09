@@ -17,7 +17,8 @@ const GroupSchema: Schema = new Schema<IGroup>({
   createdAt: {
     type: Date,
     default: Date.now
-  }
+  },
+  
 }, {
   timestamps:true
 });

@@ -1,5 +1,5 @@
 import { Router } from 'express';
-import { addMemberController, deleteGroupMember, getAllMembers, getGroupMember } from '../controllers/memberController';
+import { addMemberController, deleteGroupMember, getAllMembers, getGroupMember, updateMemberPaymentController } from '../controllers/memberController';
 
 const memberRouter = Router();
 // add member to group
@@ -13,5 +13,7 @@ memberRouter.get('/:memberId', getGroupMember);
 
 // delete group member
 memberRouter.delete('/:memberId', deleteGroupMember);
+// delete group member
+memberRouter.post('/updatePayment', updateMemberPaymentController);
 
 export default memberRouter;

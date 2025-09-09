@@ -11,6 +11,8 @@ import { connectRedisDbFunc } from "./confiq/connectRedis"
 import path from "path"
 import memberRouter from "./routes/memberRoutes"
 import groupRouter from "./routes/groupRoutes"
+import { connectToRabbitMqFunc, consumeMessageRabitmq } from "./confiq/rabbitmqConnect"
+import { updateMemberPaymentFunc } from "./utils/updateMembersPayment"
 
 
 
@@ -104,18 +106,30 @@ res.status(500).json({
     stack })
 })
 
-app.listen(PORT, async() => { 
+
+const startServer = async () => { 
     try {
-     
+        await connectToRabbitMqFunc()
         const res = await dbConnectFunc()
+        await consumeMessageRabitmq("payment.success", async (msg) => { 
+            const data = JSON.stringify(msg)
+            console.log(`stringify msg from que ${data}`)
+           console.log(typeof JSON.parse(data))
+           console.log("parsed data",JSON.parse(data))
+            await updateMemberPaymentFunc(JSON.parse(data))
+           
+        })
         if (res) { 
             logger.info("MongoDb  connected successfully")
         }
-        logger.info(`App started at port ${PORT}`)
-        
+        app.listen(PORT, () => { 
+            logger.info(`App started at port ${PORT}`)
+        })
     } catch (error) {
         logger.error(`Application error, ${error}`)
         console.log(`Application erorr occured`, error)
-        process.exit()
+        process.exit(1)
     }
-})
+}
+
+startServer()

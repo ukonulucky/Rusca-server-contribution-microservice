@@ -1,7 +1,18 @@
-import mongoose, { Schema, Document } from 'mongoose';
-import { IMember } from '../types/appTypes';
+import mongoose, { Schema } from 'mongoose';
+import { contributionSchemaType, IMember } from '../types/appTypes';
 
-const MemberSchema: Schema = new Schema<IMember>({
+
+const contributionSchema = new Schema<contributionSchemaType>({
+  contributionAmount: {
+    type: Number
+  },
+  contributionDate: {
+    type: Date,
+    default: Date.now
+  }
+})
+
+const MemberSchema = new Schema<IMember>({
   userId: {
     type: mongoose.Schema.Types.ObjectId,
     ref: "User",
@@ -12,6 +23,12 @@ const MemberSchema: Schema = new Schema<IMember>({
   status: { type: String, default: 'pending' },
   createdAt: {
     type: Date, default: Date.now
+  },
+  contribution: {
+    type: [{
+      type:contributionSchema
+    }],
+    default: []
   }
 }, {
   timestamps: true

@@ -273,3 +273,78 @@ export const getAllMembers = async (req: Request, res: Response) => {
 };
 
 
+// update payment
+
+export const updateMemberPaymentController: RequestHandler = async (
+  req,
+  res
+) => {
+
+  const { 
+    email,
+    description,
+    amount
+  } = req.body
+
+      
+  try {
+    logger.info("user hit the update member payment controller");
+    const getGroupName = description.split(" ")[3]
+    console.log("groupName", getGroupName)
+    const data = await GroupModel.aggregate([
+      {
+        $match: { groupName: getGroupName }
+      },
+      {
+        $lookup: {
+          from: 'users',            // Name of the user collection
+          localField: 'groupMembersId',  // Field in Group to match
+          foreignField: '_id',      // Field in User to match
+          as: 'members'             // Field in Group to store matched users
+        }
+      },
+      {
+        $unwind: '$members'         // Unwind the users (to access them individually)
+      },
+      {
+        $match: { 'members.email': email } // Filter by email
+      }
+    ]);
+
+    // update the payment for the user
+ const updatedMember =   await MemberModel.findOneAndUpdate({
+      userId: data[0].members._id,
+      groupId:data[0]._id
+ }, {
+   $push: {
+     contribution: {
+      contributionAmount: amount,
+      contributionDate: new Date()
+     }
+   }
+ }, {
+   new: true
+ })
+    
+    res
+      .status(201)
+      .json({
+        message: "Member updated successfully",
+       updatedMember
+      });
+  } catch (err) {
+    logger.error(err);
+    if (err instanceof Error) {
+      logger.error(err.message);
+      res.status(500).json({
+        message: err.message,
+        status: false,
+      });
+    } else {
+      res.status(500).json({
+        message: "Internal server error",
+        status: false,
+      });
+    }
+  }
+};

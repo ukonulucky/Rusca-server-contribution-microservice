@@ -16,11 +16,17 @@ export interface IGroup extends Document {
 }
   
 
+export interface contributionSchemaType extends Document { 
+  contributionAmount: number,
+    contributionDate: Date
+}
+
 export interface IMember extends Document {
     userId: MongooseIdType ;
     groupId: MongooseIdType;
   status: "active" | "pending" | "suspended";
-  createdAt: Date
+  createdAt: Date,
+  contribution: contributionSchemaType[]
   }
 
 
@@ -41,3 +47,9 @@ export interface IContribution extends Document {
     userId: MongooseIdType,
     groupId: MongooseIdType
   }
+
+  export type updatePaymentType = {
+    email: string
+    amount:string, 
+    description:string
+}

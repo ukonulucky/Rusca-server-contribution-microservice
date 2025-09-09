@@ -1,4 +1,4 @@
-import mongoose, { Schema, Document } from 'mongoose';
+import mongoose, { Schema } from 'mongoose';
 import { IContribution } from '../types/appTypes';
 
 const ContributionSchema: Schema = new Schema({
