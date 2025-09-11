@@ -53,6 +53,7 @@ export const updateMemberPaymentFunc = async (
    })
       logger.info("User payment updated",updatedMember)
      
+    
     } catch (err: any) {
       logger.error(err);
      console.log("error at update user payment", err)

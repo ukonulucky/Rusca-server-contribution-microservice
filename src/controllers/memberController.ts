@@ -233,18 +233,128 @@ export const deleteGroupMember = async (req: Request, res: Response) => {
   }
 };
 
+// activate member 
+export const activateGroupMemberController = async (req: Request, res: Response) => {
+  try {
+    logger.info("user hits the activate group member controller");
+    const { memberId } = req.params;
+
+    const isIdVallid = isValidObjectId(memberId.toString());
+
+    if (!memberId || !isIdVallid) {
+      return res.status(404).json({
+        status: "false",
+        message: "Group id invalid/notfound",
+      });
+    }
+    console.log("memberId sent", memberId)
+    const member = await MemberModel.findByIdAndUpdate(memberId, {
+      status: "active"
+    }, {
+      new: true
+    });
+    if (!member) {
+      return res.status(404).json({
+        message: "member not found",
+        status: false,
+        member
+      });
+    }
+    logger.info("member status changes to active from group:", member);
+  
+    res.status(200).json({
+      message: "Member status updated successfully",
+      status: false,
+      data: member,
+    });
+  } catch (err) {
+    logger.error(err);
+    if (err instanceof Error) {
+      logger.error(err.message);
+      res.status(500).json({
+        message: err.message,
+        status: false,
+      });
+    } else {
+      logger.error(err);
+      if (err instanceof Error) {
+        logger.error(err.message);
+        res.status(500).json({
+          message: err.message,
+          status: false,
+        });
+      } else {
+        res.status(500).json({
+          message: "Internal server error",
+          status: false,
+        });
+      }
+    }
+  }
+};
+
 // get All members
 export const getAllMembers = async (req: Request, res: Response) => {
   try {
     logger.info("user hits the getAllMembers controller");
-
-    const members = await MemberModel.find({});
+    const data = await MemberModel.find({});
+   
     logger.info("All members fetched from Db");
 
     res.status(200).json({
       message: "Members fetched successfully",
       status: false,
-      data: members,
+      data,
+    });
+  } catch (err) {
+    logger.error(err);
+    if (err instanceof Error) {
+      logger.error(err.message);
+      res.status(500).json({
+        message: err.message,
+        status: false,
+      });
+    } else {
+      logger.error(err);
+      if (err instanceof Error) {
+        logger.error(err.message);
+        res.status(500).json({
+          message: err.message,
+          status: false,
+        });
+      } else {
+        res.status(500).json({
+          message: "Internal server error",
+          status: false,
+        });
+      }
+    }
+  }
+};
+export const getAllMembersDetails = async (req: Request, res: Response) => {
+  try {
+    logger.info("user hits the getAllMembers Details controller");
+    const data = await MemberModel.aggregate([
+      {
+        $lookup: {
+          from: 'users',            // Name of the user collection
+          localField: 'userId',  // Field in Group to match
+          foreignField: '_id',      // Field in User to match
+          as: 'members'             // Field in Group to store matched users
+        }
+      },
+      {
+        $unwind: '$members'         // Unwind the users (to access them individually)
+      },
+      
+    ]);
+   
+    logger.info("All members fetched from Db with details");
+
+    res.status(200).json({
+      message: "Members fetched successfully",
+      status: false,
+      data,
     });
   } catch (err) {
     logger.error(err);
